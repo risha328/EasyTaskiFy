@@ -17,19 +17,25 @@ export const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  // Dynamic role folder prefix based on active URL
-  let rolePrefix = '/superadmin';
-  if (location.pathname.includes('/admin/')) rolePrefix = '/admin';
+  // Dynamic role folder prefix based on user role and active URL
+  let rolePrefix = '/admin';
+  if (user?.role === 'SUPER_ADMIN') rolePrefix = '/superadmin';
+  else if (user?.role === 'ADMIN') rolePrefix = '/admin';
+  else if (user?.role === 'MANAGER') rolePrefix = '/manager';
+  else if (user?.role === 'MEMBER' || user?.role === 'USER') rolePrefix = '/member';
+
+  if (location.pathname.includes('/superadmin/')) rolePrefix = '/superadmin';
+  else if (location.pathname.includes('/admin/')) rolePrefix = '/admin';
   else if (location.pathname.includes('/manager/')) rolePrefix = '/manager';
   else if (location.pathname.includes('/member/') || location.pathname.includes('/employee/')) rolePrefix = '/member';
 
   const navigationItems = [
     { name: 'Dashboard', path: `${rolePrefix}/dashboard`, icon: LayoutDashboard },
     { name: 'Workspaces', path: `${rolePrefix}/workspaces`, icon: Building2 },
-    { name: 'Projects', path: '/projects', icon: FolderKanban },
-    { name: 'Task Board', path: '/tasks', icon: CheckSquare },
+    { name: 'Projects', path: `${rolePrefix}/projects`, icon: FolderKanban },
+    { name: 'Task Board', path: `${rolePrefix}/tasks`, icon: CheckSquare },
     { name: 'Team & Roles', path: `${rolePrefix}/team`, icon: Users },
-    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Analytics', path: `${rolePrefix}/analytics`, icon: BarChart3 },
   ];
 
   const getInitial = (name) => {

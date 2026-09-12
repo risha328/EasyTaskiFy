@@ -78,7 +78,7 @@ export const LandingNavbar = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <Link
-              to="/superadmin/dashboard"
+              to="/dashboard"
               className="px-4 py-2 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-lg shadow-white/10"
             >
               <span>Go to Dashboard</span>

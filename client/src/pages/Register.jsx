@@ -35,8 +35,21 @@ export const Register = () => {
 
     try {
       setIsSubmitting(true);
-      await register(name, email, password);
-      navigate('/', { replace: true });
+      const data = await register(name, email, password);
+      const userRole = data?.user?.role;
+
+      let targetPath = '/member/dashboard';
+      if (userRole === 'SUPER_ADMIN') {
+        targetPath = '/superadmin/dashboard';
+      } else if (userRole === 'ADMIN') {
+        targetPath = '/admin/dashboard';
+      } else if (userRole === 'MANAGER') {
+        targetPath = '/manager/dashboard';
+      } else if (userRole === 'MEMBER' || userRole === 'USER') {
+        targetPath = '/member/dashboard';
+      }
+
+      navigate(targetPath, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

@@ -27,7 +27,7 @@ export const BottomCTASection = () => {
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/superadmin/dashboard"
+            to="/dashboard"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-zinc-900 text-zinc-200 border border-zinc-800 font-semibold text-sm hover:bg-zinc-800 hover:border-zinc-700 transition-all flex items-center justify-center gap-2"
           >
             <span>Request a live walkthrough</span>

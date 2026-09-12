@@ -1,6 +1,7 @@
 import Organization from '../models/Organization.js';
 import OrganizationMember from '../models/OrganizationMember.js';
 import User from '../models/User.js';
+import PendingInvite from '../models/PendingInvite.js';
 
 export const createOrganization = async (req, res, next) => {
   try {
@@ -156,19 +157,36 @@ export const getOrganizationMembers = async (req, res, next) => {
       .populate('userId', 'name email role')
       .sort({ createdAt: -1 });
 
-    const formattedMembers = members.map((m) => ({
-      id: m._id,
-      userId: m.userId._id,
-      name: m.userId.name,
-      email: m.userId.email,
-      role: m.role,
-      joinedAt: m.createdAt,
+    const activeMembers = members
+      .filter((m) => m.userId != null)
+      .map((m) => ({
+        id: m._id,
+        userId: m.userId._id,
+        name: m.userId.name,
+        email: m.userId.email,
+        role: m.role,
+        joinedAt: m.createdAt,
+        isPending: false,
+      }));
+
+    const pendingInvites = await PendingInvite.find({ organizationId: req.params.id }).sort({ createdAt: -1 });
+
+    const pendingMembers = pendingInvites.map((p) => ({
+      id: p._id,
+      userId: null,
+      name: p.email.split('@')[0],
+      email: p.email,
+      role: p.role,
+      joinedAt: p.createdAt,
+      isPending: true,
     }));
+
+    const allMembers = [...activeMembers, ...pendingMembers];
 
     res.status(200).json({
       status: 'success',
-      results: formattedMembers.length,
-      members: formattedMembers,
+      results: allMembers.length,
+      members: allMembers,
     });
   } catch (error) {
     next(error);
@@ -187,49 +205,79 @@ export const addOrganizationMember = async (req, res, next) => {
       });
     }
 
-    const targetUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!targetUser) {
-      return res.status(404).json({
-        status: 'fail',
-        message: `User with email '${email}' is not registered on TaskFlow. Please ask them to sign up first.`,
-      });
-    }
-
-    const existingMember = await OrganizationMember.findOne({
-      organizationId: orgId,
-      userId: targetUser._id,
-    });
-
-    if (existingMember) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'User is already a member of this organization',
-      });
-    }
-
+    const cleanEmail = email.toLowerCase().trim();
     const requestedRole = role.toUpperCase();
 
-    // Elevate target user system role if added with ADMIN role
-    if (requestedRole === 'ADMIN' && targetUser.role !== 'SUPER_ADMIN' && targetUser.role !== 'ADMIN') {
-      targetUser.role = 'ADMIN';
-      await targetUser.save();
+    const targetUser = await User.findOne({ email: cleanEmail });
+
+    if (targetUser) {
+      const existingMember = await OrganizationMember.findOne({
+        organizationId: orgId,
+        userId: targetUser._id,
+      });
+
+      if (existingMember) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'User is already a member of this organization',
+        });
+      }
+
+      // Sync user system role to match the assigned role (unless SUPER_ADMIN)
+      if (targetUser.role !== 'SUPER_ADMIN') {
+        targetUser.role = requestedRole;
+        await targetUser.save();
+      }
+
+      const newMember = await OrganizationMember.create({
+        organizationId: orgId,
+        userId: targetUser._id,
+        role: requestedRole,
+      });
+
+      return res.status(201).json({
+        status: 'success',
+        member: {
+          id: newMember._id,
+          userId: targetUser._id,
+          name: targetUser.name,
+          email: targetUser.email,
+          role: newMember.role,
+          joinedAt: newMember.createdAt,
+          isPending: false,
+        },
+      });
     }
 
-    const newMember = await OrganizationMember.create({
+    // Target user does not exist yet -> Save as Pending Invite with assigned role
+    let pendingInvite = await PendingInvite.findOne({
       organizationId: orgId,
-      userId: targetUser._id,
-      role: requestedRole,
+      email: cleanEmail,
     });
+
+    if (pendingInvite) {
+      pendingInvite.role = requestedRole;
+      await pendingInvite.save();
+    } else {
+      pendingInvite = await PendingInvite.create({
+        organizationId: orgId,
+        email: cleanEmail,
+        role: requestedRole,
+        invitedBy: req.user._id,
+      });
+    }
 
     res.status(201).json({
       status: 'success',
+      message: `Invite recorded for ${cleanEmail} as ${requestedRole}. They will automatically join upon registration.`,
       member: {
-        id: newMember._id,
-        userId: targetUser._id,
-        name: targetUser.name,
-        email: targetUser.email,
-        role: newMember.role,
-        joinedAt: newMember.createdAt,
+        id: pendingInvite._id,
+        userId: null,
+        name: cleanEmail.split('@')[0],
+        email: cleanEmail,
+        role: pendingInvite.role,
+        joinedAt: pendingInvite.createdAt,
+        isPending: true,
       },
     });
   } catch (error) {

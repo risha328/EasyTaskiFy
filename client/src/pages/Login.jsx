@@ -26,8 +26,21 @@ export const Login = () => {
 
     try {
       setIsSubmitting(true);
-      await login(email, password);
-      navigate(from, { replace: true });
+      const data = await login(email, password);
+      const userRole = data?.user?.role;
+
+      let targetPath = '/admin/dashboard';
+      if (userRole === 'SUPER_ADMIN') {
+        targetPath = '/superadmin/dashboard';
+      } else if (userRole === 'ADMIN') {
+        targetPath = '/admin/dashboard';
+      } else if (userRole === 'MANAGER') {
+        targetPath = '/manager/dashboard';
+      } else if (userRole === 'MEMBER' || userRole === 'USER') {
+        targetPath = '/member/dashboard';
+      }
+
+      navigate(from !== '/' ? from : targetPath, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to sign in. Please check your credentials.');
     } finally {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { OrganizationProvider } from './context/OrganizationContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
@@ -38,6 +38,19 @@ const queryClient = new QueryClient({
   },
 });
 
+// Smart dashboard redirect based on logged-in user role
+const DashboardRedirect = () => {
+  const { user } = useAuth();
+  const role = user?.role;
+
+  if (role === 'SUPER_ADMIN') return <Navigate to="/superadmin/dashboard" replace />;
+  if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+  if (role === 'MANAGER') return <Navigate to="/manager/dashboard" replace />;
+  if (role === 'MEMBER' || role === 'USER') return <Navigate to="/member/dashboard" replace />;
+
+  return <Navigate to="/admin/dashboard" replace />;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -60,8 +73,8 @@ function App() {
                   </ProtectedRoute>
                 }
               >
-                {/* Redirect /dashboard to /superadmin/dashboard */}
-                <Route path="/dashboard" element={<Navigate to="/superadmin/dashboard" replace />} />
+                {/* Dynamic Role-Based /dashboard Redirect */}
+                <Route path="/dashboard" element={<DashboardRedirect />} />
                 
                 {/* Superadmin Routes */}
                 <Route path="/superadmin/dashboard" element={<SuperadminDashboard />} />
@@ -87,16 +100,16 @@ function App() {
                 <Route path="/employee/team" element={<MemberTeam />} />
 
                 {/* Fallback Workspaces & Team */}
-                <Route path="/workspaces" element={<SuperadminWorkspaces />} />
-                <Route path="/team" element={<SuperadminTeam />} />
+                <Route path="/workspaces" element={<AdminWorkspaces />} />
+                <Route path="/team" element={<AdminTeam />} />
 
                 {/* Catch-all */}
                 <Route
                   path="*"
                   element={
-                    <div className="p-8 text-center space-y-3">
-                      <h2 className="text-xl font-bold text-zinc-900 font-lato">Module Under Construction</h2>
-                      <p className="text-xs text-zinc-500 font-lato">
+                    <div className="p-8 text-center space-y-3 font-lato">
+                      <h2 className="text-xl font-bold text-zinc-900">Module Under Construction</h2>
+                      <p className="text-xs text-zinc-500">
                         This feature module will be unlocked in upcoming development phases according to the implementation plan.
                       </p>
                     </div>

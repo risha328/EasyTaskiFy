@@ -37,7 +37,7 @@ export const HeroSection = () => {
           <ArrowRight className="w-4 h-4" />
         </Link>
         <Link
-          to="/superadmin/dashboard"
+          to="/dashboard"
           className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-zinc-900 text-zinc-200 border border-zinc-800 font-semibold text-sm hover:bg-zinc-850 hover:border-zinc-700 transition-all flex items-center justify-center gap-2"
         >
           <Terminal className="w-4 h-4 text-zinc-400" />
