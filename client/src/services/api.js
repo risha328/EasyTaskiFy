@@ -10,7 +10,54 @@ export const apiClient = axios.create({
   timeout: 10000,
 });
 
+// Request interceptor to attach JWT token to all requests
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('taskflow_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor to handle token expiry / 401 errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear invalid token if non-login route yields 401
+      if (!error.config.url.includes('/auth/login') && !error.config.url.includes('/auth/register')) {
+        localStorage.removeItem('taskflow_token');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const fetchHealth = async () => {
   const response = await apiClient.get('/health');
+  return response.data;
+};
+
+// Auth API Methods
+export const registerApi = async (userData) => {
+  const response = await apiClient.post('/auth/register', userData);
+  return response.data;
+};
+
+export const loginApi = async (credentials) => {
+  const response = await apiClient.post('/auth/login', credentials);
+  return response.data;
+};
+
+export const fetchMeApi = async () => {
+  const response = await apiClient.get('/auth/me');
+  return response.data;
+};
+
+export const logoutApi = async () => {
+  const response = await apiClient.post('/auth/logout');
   return response.data;
 };
