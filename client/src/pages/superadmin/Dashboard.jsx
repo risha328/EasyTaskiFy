@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useOrganization } from '../context/OrganizationContext';
+import { useAuth } from '../../context/AuthContext';
+import { useOrganization } from '../../context/OrganizationContext';
 import {
   Building2,
   Plus,
   Check,
-  ArrowRight,
   Loader2,
   X,
-  Mail,
   ChevronDown
 } from 'lucide-react';
 
-export const Dashboard = () => {
+export const SuperadminDashboard = () => {
   const { user } = useAuth();
   const { organizations, activeOrg, canCreateWorkspace, switchOrganization, createOrganization } = useOrganization();
-  const location = useLocation();
-  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
@@ -25,22 +20,6 @@ export const Dashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [filterTenant, setFilterTenant] = useState('All Tenants');
-
-  // Determine active role route from location pathname
-  const currentPath = location.pathname;
-  let activeRoleRoute = 'superadmin';
-  if (currentPath.includes('/admin/')) activeRoleRoute = 'admin';
-  else if (currentPath.includes('/manager/')) activeRoleRoute = 'manager';
-  else if (currentPath.includes('/employee/') || currentPath.includes('/member/')) activeRoleRoute = 'employee';
-
-  const roleTabs = [
-    { id: 'superadmin', path: '/superadmin/dashboard', label: 'Superadmin', badge: 'SYSTEM ADMIN' },
-    { id: 'admin', path: '/admin/dashboard', label: 'Org Admin', badge: 'ORG ADMIN' },
-    { id: 'manager', path: '/manager/dashboard', label: 'Manager', badge: 'SPRINT LEAD' },
-    { id: 'employee', path: '/employee/dashboard', label: 'Employee', badge: 'CONTRIBUTOR' },
-  ];
-
-  const activeTabMeta = roleTabs.find((t) => t.id === activeRoleRoute) || roleTabs[0];
 
   const handleCreateOrg = async (e) => {
     e.preventDefault();
@@ -64,7 +43,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Mock workspace items if backend returned default list
   const displayOrgs = organizations.length > 0 ? organizations : [
     {
       id: 'acme-corp-01',
@@ -121,7 +99,6 @@ export const Dashboard = () => {
 
       {/* Top 4 KPI Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
         <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL WORKSPACES</span>
           <div className="flex items-baseline gap-2">
@@ -133,7 +110,6 @@ export const Dashboard = () => {
           <p className="text-[11px] text-zinc-500 font-medium">Multi-tenant isolated Orgs</p>
         </div>
 
-        {/* Metric 2 */}
         <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL USERS MANAGED</span>
           <div className="flex items-baseline gap-2">
@@ -145,7 +121,6 @@ export const Dashboard = () => {
           <p className="text-[11px] text-zinc-500 font-medium">Across 4 user roles</p>
         </div>
 
-        {/* Metric 3 */}
         <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">UPTIME SLA</span>
           <div className="flex items-baseline gap-2">
@@ -157,7 +132,6 @@ export const Dashboard = () => {
           <p className="text-[11px] text-zinc-500 font-medium">Global edge routing</p>
         </div>
 
-        {/* Metric 4 */}
         <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">SYSTEM GOVERNANCE</span>
           <div className="flex items-baseline gap-2">
@@ -190,7 +164,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Workspaces 3-Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {displayOrgs.map((org, index) => {
             const isActive = activeOrg?.id === org.id || index === 0;
@@ -211,7 +184,6 @@ export const Dashboard = () => {
                 }`}
               >
                 <div className="space-y-4">
-                  {/* Top Name & Badge */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-md">
@@ -237,7 +209,6 @@ export const Dashboard = () => {
                     </span>
                   </div>
 
-                  {/* Details Specs Table */}
                   <div className="space-y-1.5 pt-2 text-xs font-mono border-t border-zinc-100">
                     <div className="flex items-center justify-between text-zinc-500">
                       <span>Tenant ID</span>
@@ -261,7 +232,6 @@ export const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* Bottom Action Button */}
                 <div>
                   {isActive ? (
                     <button
@@ -331,9 +301,6 @@ export const Dashboard = () => {
                     placeholder="e.g. admin@acme.com"
                     className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white"
                   />
-                  <p className="text-[10px] text-zinc-500">
-                    Superadmin can assign a designated Admin to manage this workspace.
-                  </p>
                 </div>
               )}
 
@@ -360,3 +327,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+export default SuperadminDashboard;

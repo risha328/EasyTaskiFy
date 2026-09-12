@@ -17,18 +17,18 @@ export const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  // Keep active role path if navigating inside role dashboard
-  let currentDashboardPath = '/superadmin/dashboard';
-  if (location.pathname.includes('/admin/')) currentDashboardPath = '/admin/dashboard';
-  else if (location.pathname.includes('/manager/')) currentDashboardPath = '/manager/dashboard';
-  else if (location.pathname.includes('/employee/')) currentDashboardPath = '/employee/dashboard';
+  // Dynamic role folder prefix based on active URL
+  let rolePrefix = '/superadmin';
+  if (location.pathname.includes('/admin/')) rolePrefix = '/admin';
+  else if (location.pathname.includes('/manager/')) rolePrefix = '/manager';
+  else if (location.pathname.includes('/member/') || location.pathname.includes('/employee/')) rolePrefix = '/member';
 
   const navigationItems = [
-    { name: 'Dashboard', path: currentDashboardPath, icon: LayoutDashboard },
-    { name: 'Workspaces', path: '/workspaces', icon: Building2 },
+    { name: 'Dashboard', path: `${rolePrefix}/dashboard`, icon: LayoutDashboard },
+    { name: 'Workspaces', path: `${rolePrefix}/workspaces`, icon: Building2 },
     { name: 'Projects', path: '/projects', icon: FolderKanban },
     { name: 'Task Board', path: '/tasks', icon: CheckSquare },
-    { name: 'Team & Roles', path: '/team', icon: Users },
+    { name: 'Team & Roles', path: `${rolePrefix}/team`, icon: Users },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
   ];
 
