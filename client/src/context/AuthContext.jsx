@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const register = async (name, email, password) => {
-    const data = await registerApi({ name, email, password });
+  const register = async (name, email, password, role = 'MEMBER') => {
+    const data = await registerApi({ name, email, password, role });
     if (data.token) {
       localStorage.setItem('taskflow_token', data.token);
       setToken(data.token);

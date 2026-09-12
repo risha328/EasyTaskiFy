@@ -53,7 +53,7 @@ export const Register = () => {
             <SquareTerminal className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Create TaskFlow Account</h2>
-          <p className="text-xs text-zinc-600">Join the DevOps & Task Management Platform</p>
+          <p className="text-xs text-zinc-600 font-medium">Join your team's DevOps & Task Management Platform</p>
         </div>
 
         {/* Register Form Card */}
@@ -75,7 +75,7 @@ export const Register = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="DevOps Lead"
+                  placeholder="e.g. Alex Morgan"
                   required
                   className="w-full bg-zinc-50 border border-zinc-300 rounded-xl pl-10 pr-4 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:bg-white focus:ring-1 focus:ring-zinc-900 transition-all"
                 />

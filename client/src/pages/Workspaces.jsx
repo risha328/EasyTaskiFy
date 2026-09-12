@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOrganization } from '../context/OrganizationContext';
 import {
@@ -10,68 +9,18 @@ import {
   Loader2,
   X,
   Mail,
-  Shield,
-  UserCheck,
-  Briefcase,
-  Users,
-  Layers,
-  Activity,
-  Key
+  ShieldCheck
 } from 'lucide-react';
 
-export const Dashboard = () => {
+export const Workspaces = () => {
   const { user } = useAuth();
   const { organizations, activeOrg, canCreateWorkspace, switchOrganization, createOrganization } = useOrganization();
-  const location = useLocation();
-  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  // Determine active role route from location pathname
-  const currentPath = location.pathname;
-  let activeRoleRoute = 'superadmin';
-  if (currentPath.includes('/admin/')) activeRoleRoute = 'admin';
-  else if (currentPath.includes('/manager/')) activeRoleRoute = 'manager';
-  else if (currentPath.includes('/employee/') || currentPath.includes('/member/')) activeRoleRoute = 'employee';
-
-  const roleTabs = [
-    {
-      id: 'superadmin',
-      path: '/superadmin/dashboard',
-      label: 'Superadmin View',
-      icon: Shield,
-      badge: 'System Admin',
-      color: 'bg-rose-500/10 text-rose-700 border-rose-200',
-    },
-    {
-      id: 'admin',
-      path: '/admin/dashboard',
-      label: 'Org Admin View',
-      icon: UserCheck,
-      badge: 'Workspace Admin',
-      color: 'bg-indigo-500/10 text-indigo-700 border-indigo-200',
-    },
-    {
-      id: 'manager',
-      path: '/manager/dashboard',
-      label: 'Manager View',
-      icon: Briefcase,
-      badge: 'Sprint Lead',
-      color: 'bg-amber-500/10 text-amber-700 border-amber-200',
-    },
-    {
-      id: 'employee',
-      path: '/employee/dashboard',
-      label: 'Employee View',
-      icon: Users,
-      badge: 'Contributor',
-      color: 'bg-emerald-500/10 text-emerald-700 border-emerald-200',
-    },
-  ];
 
   const handleCreateOrg = async (e) => {
     e.preventDefault();
@@ -95,75 +44,22 @@ export const Dashboard = () => {
     }
   };
 
-  const activeTabMeta = roleTabs.find((t) => t.id === activeRoleRoute) || roleTabs[0];
-
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* 4 Role Dashboard Navigation Bar */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-3 shadow-sm space-y-2">
-        <div className="flex items-center justify-between px-2 text-xs font-mono text-zinc-500">
-          <span className="flex items-center gap-1.5 font-bold text-zinc-900">
-            <Layers className="w-3.5 h-3.5" />
-            ROLE DASHBOARD SWITCHER
-          </span>
-          <span>Active URL: <code className="text-zinc-900 font-bold">{location.pathname}</code></span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {roleTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeRoleRoute === tab.id;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => navigate(tab.path)}
-                className={`p-3 rounded-xl border flex flex-col gap-1 transition-all text-left ${
-                  isActive
-                    ? 'bg-zinc-900 text-white border-zinc-900 shadow-md scale-[1.01]'
-                    : 'bg-zinc-50/70 text-zinc-700 border-zinc-200 hover:border-zinc-400 hover:bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-zinc-500'}`} />
-                  <span
-                    className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
-                      isActive
-                        ? 'bg-white/20 text-white border-white/20'
-                        : 'bg-zinc-200/80 text-zinc-700 border-zinc-300'
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
-                </div>
-                <span className="font-bold text-xs">{tab.label}</span>
-                <span className={`text-[10px] font-mono truncate ${isActive ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                  {tab.path}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 mb-1">
             <span className="px-2 py-0.5 rounded bg-zinc-900 text-white font-semibold">
-              EASYTASKIFY DASHBOARD
+              WORKSPACES DIRECTORY
             </span>
-            <span className="font-bold text-zinc-900">[{activeTabMeta.badge.toUpperCase()}]</span>
-            <span>• Enterprise Workspace Management</span>
+            <span>• Enterprise Organizations</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">
-            Workspaces & Operational Overview
+            All Workspaces
           </h1>
           <p className="text-sm text-zinc-600 mt-1">
-            Logged in as: <span className="text-zinc-900 font-semibold">{user?.name}</span> ({user?.email})
-            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-zinc-100 text-zinc-800 border border-zinc-300">
-              System Role: {user?.role || 'MEMBER'}
-            </span>
+            Manage and switch between created company workspaces
           </p>
         </div>
 
@@ -178,40 +74,12 @@ export const Dashboard = () => {
         )}
       </div>
 
-      {/* Role Privilege Banner */}
-      <div className="p-4 rounded-2xl bg-zinc-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-            <Key className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm">{activeTabMeta.label} Capabilities</h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/20 text-white font-semibold">
-                ACTIVE MODE
-              </span>
-            </div>
-            <p className="text-xs text-zinc-300">
-              {activeRoleRoute === 'superadmin' && 'Full multi-tenant organization creation, admin assignment, and global system governance.'}
-              {activeRoleRoute === 'admin' && 'Workspace administration, team member invites, project creation, and org configuration.'}
-              {activeRoleRoute === 'manager' && 'Sprint planning, Kanban WIP limit monitoring, task triage, and team allocation.'}
-              {activeRoleRoute === 'employee' && 'Task completion, backlog execution, personal work assignment, and time tracking.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-zinc-300 shrink-0">
-          <Activity className="w-4 h-4 text-emerald-400" />
-          <span>Status: Operational</span>
-        </div>
-      </div>
-
-      {/* Workspaces List Section */}
+      {/* Workspaces Grid Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-zinc-900 flex items-center gap-2">
             <Building2 className="w-4 h-4 text-zinc-700" />
-            <span>Created Workspaces</span>
+            <span>Available Workspaces</span>
             <span className="ml-1 text-xs font-mono bg-zinc-100 text-zinc-800 px-2 py-0.5 rounded-full border border-zinc-200">
               {organizations.length}
             </span>
@@ -223,7 +91,7 @@ export const Dashboard = () => {
             <div className="w-12 h-12 rounded-2xl bg-zinc-200 flex items-center justify-center mx-auto text-zinc-600">
               <Building2 className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-zinc-900">No Workspaces Created Yet</h3>
+            <h3 className="text-sm font-bold text-zinc-900">No Workspaces Available</h3>
             <p className="text-xs text-zinc-500 max-w-sm mx-auto">
               {canCreateWorkspace
                 ? 'Click below to create your first workspace and assign a Workspace Admin.'

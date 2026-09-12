@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { Navbar } from './Navbar';
 import { useQuery } from '@tanstack/react-query';
 import { fetchHealth } from '../../services/api';
 
@@ -16,9 +15,8 @@ export const MainLayout = () => {
   return (
     <div className="flex min-h-screen bg-zinc-50 text-zinc-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar healthData={healthData} isHealthLoading={isHealthLoading} />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+        <main className="flex-1 p-6 md:p-8">
           <Outlet context={{ healthData, isHealthLoading }} />
         </main>
       </div>

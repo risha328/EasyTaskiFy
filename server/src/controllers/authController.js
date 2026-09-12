@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Organization from '../models/Organization.js';
+import OrganizationMember from '../models/OrganizationMember.js';
 
 // Helper to sanitize user output
 const formatUserResponse = (user) => ({
@@ -27,7 +29,9 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+
+    const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
       return res.status(400).json({
         status: 'fail',
@@ -35,11 +39,44 @@ export const register = async (req, res, next) => {
       });
     }
 
+    const isFirstUser = (await User.countDocuments({})) === 0;
+    const isSuperAdminEmail =
+      cleanEmail.startsWith('admin@') ||
+      cleanEmail.startsWith('superadmin@');
+
+    // Check if user was assigned as Admin for any workspace by Superadmin
+    const pendingOrgAssignments = await Organization.find({ assignedAdminEmail: cleanEmail });
+
+    let systemRole = isFirstUser || isSuperAdminEmail ? 'SUPER_ADMIN' : 'MEMBER';
+    if (pendingOrgAssignments.length > 0 && systemRole !== 'SUPER_ADMIN') {
+      systemRole = 'ADMIN';
+    }
+
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: cleanEmail,
       passwordHash: password,
+      role: systemRole,
     });
+
+    // Auto-claim and link user as ADMIN for assigned workspaces
+    for (const org of pendingOrgAssignments) {
+      const existingMember = await OrganizationMember.findOne({
+        organizationId: org._id,
+        userId: user._id,
+      });
+
+      if (!existingMember) {
+        await OrganizationMember.create({
+          organizationId: org._id,
+          userId: user._id,
+          role: 'ADMIN',
+        });
+      }
+
+      org.ownerId = user._id;
+      await org.save();
+    }
 
     const token = user.generateJWT();
 
@@ -64,7 +101,7 @@ export const login = async (req, res, next) => {
       });
     }
 
-    const user = await User.findOne({ email }).select('+passwordHash');
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+passwordHash');
     if (!user) {
       return res.status(401).json({
         status: 'fail',
