@@ -95,18 +95,20 @@ export const OrganizationProvider = ({ children }) => {
     return data;
   };
 
-  const addMember = async (email, role) => {
-    if (!activeOrg) return;
-    const data = await addOrgMemberApi(activeOrg.id, email, role);
+  const addMember = async (email, role, targetOrgId = null) => {
+    const orgId = targetOrgId || activeOrg?.id;
+    if (!orgId) return;
+    const data = await addOrgMemberApi(orgId, email, role);
     if (data.status === 'success') {
       await loadMembers();
     }
     return data;
   };
 
-  const removeMember = async (userId) => {
-    if (!activeOrg) return;
-    const data = await removeOrgMemberApi(activeOrg.id, userId);
+  const removeMember = async (userId, targetOrgId = null) => {
+    const orgId = targetOrgId || activeOrg?.id;
+    if (!orgId) return;
+    const data = await removeOrgMemberApi(orgId, userId);
     if (data.status === 'success') {
       await loadMembers();
     }

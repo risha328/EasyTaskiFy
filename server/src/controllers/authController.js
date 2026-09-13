@@ -41,9 +41,7 @@ export const register = async (req, res, next) => {
     }
 
     const isFirstUser = (await User.countDocuments({})) === 0;
-    const isSuperAdminEmail =
-      cleanEmail.startsWith('admin@') ||
-      cleanEmail.startsWith('superadmin@');
+    const isSuperAdminEmail = cleanEmail.startsWith('superadmin@');
 
     // Check if user was assigned as Admin for any workspace by Superadmin
     const pendingOrgAssignments = await Organization.find({ assignedAdminEmail: cleanEmail });
@@ -52,9 +50,9 @@ export const register = async (req, res, next) => {
     let systemRole = isFirstUser || isSuperAdminEmail ? 'SUPER_ADMIN' : 'MEMBER';
 
     if (systemRole !== 'SUPER_ADMIN') {
-      if (pendingOrgAssignments.length > 0 || pendingInvites.some((inv) => inv.role === 'ADMIN')) {
+      if (pendingOrgAssignments.length > 0 || pendingInvites.some((inv) => inv.role === 'ADMIN') || cleanEmail.startsWith('admin@')) {
         systemRole = 'ADMIN';
-      } else if (pendingInvites.some((inv) => inv.role === 'MANAGER')) {
+      } else if (pendingInvites.some((inv) => inv.role === 'MANAGER') || cleanEmail.startsWith('manager@')) {
         systemRole = 'MANAGER';
       } else if (pendingInvites.some((inv) => inv.role === 'MEMBER')) {
         systemRole = 'MEMBER';
@@ -144,6 +142,15 @@ export const login = async (req, res, next) => {
       });
     }
 
+    // Correct role if non-superadmin email was incorrectly marked as SUPER_ADMIN
+    if (user.role === 'SUPER_ADMIN' && !user.email.startsWith('superadmin@')) {
+      const firstUser = await User.findOne().sort({ createdAt: 1 });
+      if (firstUser && firstUser._id.toString() !== user._id.toString()) {
+        user.role = user.email.startsWith('manager@') ? 'MANAGER' : 'ADMIN';
+        await user.save();
+      }
+    }
+
     // Sync system role with highest OrganizationMember role if not SUPER_ADMIN
     if (user.role !== 'SUPER_ADMIN') {
       const memberships = await OrganizationMember.find({ userId: user._id });
@@ -182,20 +189,31 @@ export const logout = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
-  // Sync system role with highest OrganizationMember role if not SUPER_ADMIN
-  if (req.user && req.user.role !== 'SUPER_ADMIN') {
-    const memberships = await OrganizationMember.find({ userId: req.user._id });
-    if (memberships.length > 0) {
-      const hasAdmin = memberships.some((m) => m.role === 'ADMIN');
-      const hasManager = memberships.some((m) => m.role === 'MANAGER');
-
-      let highestOrgRole = 'MEMBER';
-      if (hasAdmin) highestOrgRole = 'ADMIN';
-      else if (hasManager) highestOrgRole = 'MANAGER';
-
-      if (req.user.role !== highestOrgRole) {
-        req.user.role = highestOrgRole;
+  if (req.user) {
+    // Correct role if non-superadmin email was incorrectly marked as SUPER_ADMIN
+    if (req.user.role === 'SUPER_ADMIN' && !req.user.email.startsWith('superadmin@')) {
+      const firstUser = await User.findOne().sort({ createdAt: 1 });
+      if (firstUser && firstUser._id.toString() !== req.user._id.toString()) {
+        req.user.role = req.user.email.startsWith('manager@') ? 'MANAGER' : 'ADMIN';
         await req.user.save();
+      }
+    }
+
+    // Sync system role with highest OrganizationMember role if not SUPER_ADMIN
+    if (req.user.role !== 'SUPER_ADMIN') {
+      const memberships = await OrganizationMember.find({ userId: req.user._id });
+      if (memberships.length > 0) {
+        const hasAdmin = memberships.some((m) => m.role === 'ADMIN');
+        const hasManager = memberships.some((m) => m.role === 'MANAGER');
+
+        let highestOrgRole = 'MEMBER';
+        if (hasAdmin) highestOrgRole = 'ADMIN';
+        else if (hasManager) highestOrgRole = 'MANAGER';
+
+        if (req.user.role !== highestOrgRole) {
+          req.user.role = highestOrgRole;
+          await req.user.save();
+        }
       }
     }
   }

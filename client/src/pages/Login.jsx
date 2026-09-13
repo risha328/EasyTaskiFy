@@ -30,17 +30,26 @@ export const Login = () => {
       const userRole = data?.user?.role;
 
       let targetPath = '/admin/dashboard';
+      let rolePrefix = '/admin';
+
       if (userRole === 'SUPER_ADMIN') {
         targetPath = '/superadmin/dashboard';
+        rolePrefix = '/superadmin';
       } else if (userRole === 'ADMIN') {
         targetPath = '/admin/dashboard';
+        rolePrefix = '/admin';
       } else if (userRole === 'MANAGER') {
         targetPath = '/manager/dashboard';
+        rolePrefix = '/manager';
       } else if (userRole === 'MEMBER' || userRole === 'USER') {
         targetPath = '/member/dashboard';
+        rolePrefix = '/member';
       }
 
-      navigate(from !== '/' ? from : targetPath, { replace: true });
+      const isValidFrom = from && from !== '/' && from.startsWith(rolePrefix);
+      const destination = isValidFrom ? from : targetPath;
+
+      navigate(destination, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to sign in. Please check your credentials.');
     } finally {

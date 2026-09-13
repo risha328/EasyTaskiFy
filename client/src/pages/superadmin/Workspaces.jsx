@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganization } from '../../context/OrganizationContext';
-import { Building2, Plus, Check, ArrowRight, Loader2, X, Mail } from 'lucide-react';
+import { Building2, Plus, Check, ArrowRight, Loader2, X, Mail, Users } from 'lucide-react';
 
 export const SuperadminWorkspaces = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { organizations, activeOrg, canCreateWorkspace, switchOrganization, createOrganization } = useOrganization();
 
@@ -53,7 +55,7 @@ export const SuperadminWorkspaces = () => {
         {canCreateWorkspace && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-semibold text-xs hover:bg-zinc-800 shadow-md transition-all shrink-0"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-semibold text-xs hover:bg-zinc-800 shadow-md transition-all shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create Workspace</span>
@@ -102,23 +104,90 @@ export const SuperadminWorkspaces = () => {
                 )}
               </div>
 
-              <div>
-                {isActive ? (
-                  <button disabled className="w-full py-2.5 rounded-xl bg-white/20 text-white text-xs font-semibold flex items-center justify-center gap-2 cursor-default">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Active Workspace</span>
-                  </button>
-                ) : (
-                  <button onClick={() => switchOrganization(org.id)} className="w-full py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center justify-center gap-2 transition-all">
-                    <span>Switch Workspace</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
+              <div className="pt-2">
+                <button
+                  onClick={() => navigate(`/superadmin/team?workspaceId=${org.id}`)}
+                  className="w-full py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Enter Workspace & View Team</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-auto text-zinc-400" />
+                </button>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Create Workspace Modal */}
+      {isModalOpen && canCreateWorkspace && (
+        <div className="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4 relative">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-zinc-900" />
+                <h3 className="text-sm font-bold text-zinc-900">Create New Workspace</h3>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {error && (
+              <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
+                {error}
+              </p>
+            )}
+
+            <form onSubmit={handleCreateOrg} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-zinc-700">Workspace Name</label>
+                <input
+                  type="text"
+                  value={newOrgName}
+                  onChange={(e) => setNewOrgName(e.target.value)}
+                  placeholder="e.g. Acme DevOps Core"
+                  required
+                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-zinc-700">
+                  Assign Workspace Admin Email <span className="text-zinc-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="email"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  placeholder="e.g. admin@acme.com"
+                  className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white"
+                />
+                <p className="text-[10px] text-zinc-500">
+                  Superadmin can assign a designated Admin to manage this workspace.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 text-xs hover:bg-zinc-100 font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center gap-1.5 cursor-pointer"
+                >
+                  {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

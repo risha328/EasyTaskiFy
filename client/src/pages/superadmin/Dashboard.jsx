@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganization } from '../../context/OrganizationContext';
 import {
@@ -7,10 +8,13 @@ import {
   Check,
   Loader2,
   X,
-  ChevronDown
+  ChevronDown,
+  Users,
+  ArrowRight
 } from 'lucide-react';
 
 export const SuperadminDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { organizations, activeOrg, canCreateWorkspace, switchOrganization, createOrganization } = useOrganization();
 
@@ -233,22 +237,14 @@ export const SuperadminDashboard = () => {
                 </div>
 
                 <div>
-                  {isActive ? (
-                    <button
-                      disabled
-                      className="w-full py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-default shadow-md"
-                    >
-                      <Check className="w-4 h-4 text-emerald-400" />
-                      <span>Active Workspace</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => switchOrganization(org.id)}
-                      className="w-full py-2.5 rounded-xl bg-white border border-zinc-200 text-zinc-800 text-xs font-semibold hover:border-zinc-400 hover:bg-zinc-50 transition-all text-center"
-                    >
-                      Switch to Workspace
-                    </button>
-                  )}
+                  <button
+                    onClick={() => navigate(`/superadmin/team?workspaceId=${org.id}`)}
+                    className="w-full py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Enter Workspace & View Team</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-auto text-zinc-400" />
+                  </button>
                 </div>
               </div>
             );

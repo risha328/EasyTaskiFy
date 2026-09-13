@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogoutState = () => {
     localStorage.removeItem('taskflow_token');
+    localStorage.removeItem('taskflow_active_org_id');
     setToken(null);
     setUser(null);
   };

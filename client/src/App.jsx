@@ -51,6 +51,17 @@ const DashboardRedirect = () => {
   return <Navigate to="/admin/dashboard" replace />;
 };
 
+// Route guard restricting routes to designated role levels only
+const RequireRole = ({ allowedRoles, children }) => {
+  const { user } = useAuth();
+  const role = user?.role;
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <DashboardRedirect />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -77,27 +88,27 @@ function App() {
                 <Route path="/dashboard" element={<DashboardRedirect />} />
                 
                 {/* Superadmin Routes */}
-                <Route path="/superadmin/dashboard" element={<SuperadminDashboard />} />
-                <Route path="/superadmin/workspaces" element={<SuperadminWorkspaces />} />
-                <Route path="/superadmin/team" element={<SuperadminTeam />} />
+                <Route path="/superadmin/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminDashboard /></RequireRole>} />
+                <Route path="/superadmin/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminWorkspaces /></RequireRole>} />
+                <Route path="/superadmin/team" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminTeam /></RequireRole>} />
 
                 {/* Admin Routes */}
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-                <Route path="/admin/team" element={<AdminTeam />} />
+                <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminDashboard /></RequireRole>} />
+                <Route path="/admin/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminWorkspaces /></RequireRole>} />
+                <Route path="/admin/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminTeam /></RequireRole>} />
 
                 {/* Manager Routes */}
-                <Route path="/manager/dashboard" element={<ManagerDashboard />} />
-                <Route path="/manager/workspaces" element={<ManagerWorkspaces />} />
-                <Route path="/manager/team" element={<ManagerTeam />} />
+                <Route path="/manager/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerDashboard /></RequireRole>} />
+                <Route path="/manager/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerWorkspaces /></RequireRole>} />
+                <Route path="/manager/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerTeam /></RequireRole>} />
 
                 {/* Member / Employee Routes */}
-                <Route path="/member/dashboard" element={<MemberDashboard />} />
-                <Route path="/member/workspaces" element={<MemberWorkspaces />} />
-                <Route path="/member/team" element={<MemberTeam />} />
-                <Route path="/employee/dashboard" element={<MemberDashboard />} />
-                <Route path="/employee/workspaces" element={<MemberWorkspaces />} />
-                <Route path="/employee/team" element={<MemberTeam />} />
+                <Route path="/member/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberDashboard /></RequireRole>} />
+                <Route path="/member/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberWorkspaces /></RequireRole>} />
+                <Route path="/member/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberTeam /></RequireRole>} />
+                <Route path="/employee/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberDashboard /></RequireRole>} />
+                <Route path="/employee/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberWorkspaces /></RequireRole>} />
+                <Route path="/employee/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberTeam /></RequireRole>} />
 
                 {/* Fallback Workspaces & Team */}
                 <Route path="/workspaces" element={<AdminWorkspaces />} />
