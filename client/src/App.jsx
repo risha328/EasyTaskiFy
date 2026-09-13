@@ -18,16 +18,23 @@ import SuperadminTeam from './pages/superadmin/Team';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminWorkspaces from './pages/admin/Workspaces';
 import AdminTeam from './pages/admin/Team';
+import AdminProjects from './pages/admin/Projects';
+import AdminTasks from './pages/admin/Tasks';
+import { AdminAnalytics } from './pages/admin/Analytics';
 
 // Manager Pages
 import ManagerDashboard from './pages/manager/Dashboard';
 import ManagerWorkspaces from './pages/manager/Workspaces';
 import ManagerTeam from './pages/manager/Team';
+import { ManagerProjects } from './pages/manager/Projects';
+import { ManagerTasks } from './pages/manager/Tasks';
 
 // Member Pages
 import MemberDashboard from './pages/member/Dashboard';
 import MemberWorkspaces from './pages/member/Workspaces';
 import MemberTeam from './pages/member/Team';
+import { MemberProjects } from './pages/member/Projects';
+import { MemberTasks } from './pages/member/Tasks';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,24 +98,31 @@ function App() {
                 <Route path="/superadmin/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminDashboard /></RequireRole>} />
                 <Route path="/superadmin/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminWorkspaces /></RequireRole>} />
                 <Route path="/superadmin/team" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminTeam /></RequireRole>} />
+                <Route path="/superadmin/projects" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminWorkspaces /></RequireRole>} />
+                <Route path="/superadmin/analytics" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminDashboard /></RequireRole>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminDashboard /></RequireRole>} />
                 <Route path="/admin/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminWorkspaces /></RequireRole>} />
                 <Route path="/admin/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminTeam /></RequireRole>} />
+                <Route path="/admin/projects" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminProjects /></RequireRole>} />
+                <Route path="/admin/tasks" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminTasks /></RequireRole>} />
+                <Route path="/admin/analytics" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminAnalytics /></RequireRole>} />
 
                 {/* Manager Routes */}
                 <Route path="/manager/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerDashboard /></RequireRole>} />
                 <Route path="/manager/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerWorkspaces /></RequireRole>} />
                 <Route path="/manager/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerTeam /></RequireRole>} />
+                <Route path="/manager/projects" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerProjects /></RequireRole>} />
+                <Route path="/manager/tasks" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerTasks /></RequireRole>} />
+                <Route path="/manager/analytics" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}><ManagerDashboard /></RequireRole>} />
 
                 {/* Member / Employee Routes */}
                 <Route path="/member/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberDashboard /></RequireRole>} />
                 <Route path="/member/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberWorkspaces /></RequireRole>} />
                 <Route path="/member/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberTeam /></RequireRole>} />
-                <Route path="/employee/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberDashboard /></RequireRole>} />
-                <Route path="/employee/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberWorkspaces /></RequireRole>} />
-                <Route path="/employee/team" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberTeam /></RequireRole>} />
+                <Route path="/member/projects" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberProjects /></RequireRole>} />
+                <Route path="/member/tasks" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'MEMBER', 'USER']}><MemberTasks /></RequireRole>} />
 
                 {/* Fallback Workspaces & Team */}
                 <Route path="/workspaces" element={<AdminWorkspaces />} />

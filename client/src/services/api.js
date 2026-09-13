@@ -92,3 +92,45 @@ export const removeOrgMemberApi = async (orgId, userId) => {
   const response = await apiClient.delete(`/organizations/${orgId}/members/${userId}`);
   return response.data;
 };
+
+// Project API Methods
+export const fetchProjectsApi = async (orgId) => {
+  const response = await apiClient.get('/projects', { params: { organizationId: orgId } });
+  return response.data;
+};
+
+export const createProjectApi = async (projectData) => {
+  const response = await apiClient.post('/projects', projectData);
+  return response.data;
+};
+
+export const updateProjectApi = async (id, data) => {
+  const response = await apiClient.patch(`/projects/${id}`, data);
+  return response.data;
+};
+
+export const deleteProjectApi = async (id) => {
+  const response = await apiClient.delete(`/projects/${id}`);
+  return response.data;
+};
+
+// Task API Methods
+export const fetchTasksApi = async (orgId, params = {}) => {
+  const response = await apiClient.get('/tasks', { params: { organizationId: orgId, ...params } });
+  return response.data;
+};
+
+export const createTaskApi = async (taskData) => {
+  const response = await apiClient.post('/tasks', taskData);
+  return response.data;
+};
+
+export const updateTaskApi = async (id, data) => {
+  const response = await apiClient.patch(`/tasks/${id}`, data);
+  return response.data;
+};
+
+export const deleteTaskApi = async (id) => {
+  const response = await apiClient.delete(`/tasks/${id}`);
+  return response.data;
+};

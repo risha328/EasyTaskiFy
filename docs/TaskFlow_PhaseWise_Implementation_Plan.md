@@ -9,18 +9,42 @@
 ## Technical Overview & Progressive Evolution Architecture
 
 ```
-VERSION 1-3: Core Product MVP (React + Node + Express + MongoDB)
-VERSION 4-5: Containerization & Automation (Docker + Docker Compose + GitHub Actions)
-VERSION 6-7: Cloud & Infrastructure (AWS EC2/VPC + Terraform IaC)
-VERSION 8-9: Performance & Async Workers (Redis Caching + BullMQ Background Queue)
-VERSION 10-11: AI Integration Engine (LLM Structured Outputs + Human-in-the-Loop Task Gen)
-VERSION 12-13: Production Orchestration (Kubernetes + HPA + Helm + AWS EKS)
-VERSION 14-15: Observability & Security (Prometheus + Grafana + Structured Logs + Security Hardening)
+VERSION 1-9: Core Product MVP (React + Node + Express + MongoDB) [COMPLETED]
+VERSION 10-11: Containerization & Automation (Docker + Docker Compose + GitHub Actions)
+VERSION 12-14: Cloud & Infrastructure (AWS EC2/VPC + Terraform IaC)
+VERSION 15-16: Performance & Async Workers (Redis Caching + BullMQ Background Queue)
+VERSION 17-23: AI Integration Engine (LLM Structured Outputs + Human-in-the-Loop Task Gen)
+VERSION 24-27: Production Orchestration (Kubernetes + HPA + Helm + AWS EKS)
+VERSION 28-31: Observability & Security (Prometheus + Grafana + Structured Logs + Security Hardening)
 ```
 
 ---
 
-# SECTION A: MVP CORE PRODUCT (PHASES 1 – 9)
+## 🧭 Role-Based Navigation & Sidebar Architecture (4-Tier Isolation)
+
+TaskFlow uses a tailored 4-tier navigation architecture to present role-appropriate sidebar links, icons, and route paths:
+
+```
+[ User Logs In ]
+       |
+       +---> SUPER_ADMIN ---> [/superadmin/*] (System Dashboard, Workspaces Directory, System Team, Global Projects, Audit & Analytics)
+       +---> ADMIN       ---> [/admin/*]      (Workspace Dashboard, My Workspace, Projects, Task Board, Team & Roles, Analytics)
+       +---> MANAGER     ---> [/manager/*]    (Manager Dashboard, My Projects, Kanban Task Board, Project Team, Team Analytics)
+       +---> MEMBER      ---> [/member/*]     (My Dashboard, My Task Board, Assigned Projects, Team & Activity)
+```
+
+### Role Navigation Matrix
+
+| Role | Tailored Sidebar Links | Route Prefix | Permissions & Scope |
+|---|---|---|---|
+| **SUPER_ADMIN** | System Dashboard, Workspaces Directory, System Team & Roles, Global Projects, Audit & Analytics | `/superadmin` | Unrestricted global access, workspace creation, multi-workspace directory inspection. |
+| **ADMIN** | Workspace Dashboard, My Workspace, Projects, Task Board, Team & Roles, Analytics | `/admin` | Workspace administration, project creation, workspace member invitations & role management. |
+| **MANAGER** | Manager Dashboard, My Projects, Kanban Task Board, Project Team, Team Analytics | `/manager` | Project operations, sprint/task management, task assignment, team workload. |
+| **MEMBER** | My Dashboard, My Task Board, Assigned Projects, Team & Activity | `/member` | Individual task updates, personal Kanban execution, project participation. |
+
+---
+
+# SECTION A: MVP CORE PRODUCT (PHASES 1 – 9) [COMPLETED]
 
 ---
 
@@ -35,30 +59,20 @@ Establish monorepo/folder architecture, set up frontend React with Tailwind CSS,
 ```
 
 ### 📋 Actionable Tasks
-- [ ] Initialize git repository with comprehensive `.gitignore` for Node, React, and environment files.
-- [ ] Create repository folder structure: `client/` and `server/`.
-- [ ] **Client Setup**:
-  - [ ] Initialize React app (Vite or CRA) inside `client/`.
-  - [ ] Install dependencies: `react-router-dom`, `axios`, `@tanstack/react-query` or `lucide-react`.
-  - [ ] Configure Tailwind CSS, PostCSS, and `tailwind.config.js`.
-  - [ ] Setup base layout components (Navbar, Sidebar, Main Container).
-- [ ] **Server Setup**:
-  - [ ] Initialize `package.json` inside `server/`.
-  - [ ] Install dependencies: `express`, `mongoose`, `dotenv`, `cors`, `helmet`, `morgan`, `nodemon` (dev).
-  - [ ] Establish standard directory layout:
-    ```
-    server/src/
-      ├── config/ (db.js, env.js)
-      ├── controllers/
-      ├── middleware/
-      ├── models/
-      ├── routes/
-      ├── services/
-      └── app.js, server.js
-    ```
-  - [ ] Setup MongoDB Mongoose connection with retry & error handling.
-  - [ ] Implement global CORS configuration allowing client origin.
-  - [ ] Add `/api/health` healthcheck endpoint returning `{ status: "ok", timestamp: ISO, uptime: Number }`.
+- [x] Initialize git repository with comprehensive `.gitignore` for Node, React, and environment files.
+- [x] Create repository folder structure: `client/` and `server/`.
+- [x] **Client Setup**:
+  - [x] Initialize React app inside `client/`.
+  - [x] Install dependencies: `react-router-dom`, `axios`, `@tanstack/react-query`, `lucide-react`.
+  - [x] Configure Tailwind CSS, PostCSS, and `tailwind.config.js`.
+  - [x] Setup base layout components (Navbar, Sidebar, Main Container).
+- [x] **Server Setup**:
+  - [x] Initialize `package.json` inside `server/`.
+  - [x] Install dependencies: `express`, `mongoose`, `dotenv`, `cors`, `helmet`, `morgan`, `nodemon` (dev).
+  - [x] Establish standard directory layout (`config/`, `controllers/`, `middleware/`, `models/`, `routes/`, `services/`, `app.js`).
+  - [x] Setup MongoDB Mongoose connection with retry & error handling.
+  - [x] Implement global CORS configuration allowing client origin.
+  - [x] Add `/api/health` healthcheck endpoint returning `{ status: "ok", timestamp: ISO, uptime: Number }`.
 
 ### 🧪 Verification Criteria
 - `curl GET http://localhost:5000/api/health` returns `200 OK` with JSON payload.
@@ -70,58 +84,67 @@ Establish monorepo/folder architecture, set up frontend React with Tailwind CSS,
 ## Phase 2 — Authentication & Authorization Module
 
 ### 🎯 Objective
-Implement secure user signup, login, JWT token issuance, password hashing using bcrypt, auth middleware, and protected frontend routes.
+Implement secure user signup, login, JWT token issuance, password hashing using bcrypt, auth middleware, role-scoped route guards, and session management.
 
 ### 🏗 Auth Sequence Flow
 ```
-User -> React Login Form -> POST /api/auth/login -> Express -> Validate Credentials -> bcrypt.compare() -> Generate JWT -> Return Token & User Info -> Stored in LocalStorage/Cookies
+User -> React Login Form -> POST /api/auth/login -> Express -> Validate Credentials -> bcrypt.compare() -> Generate JWT -> Return Token & User Info -> Stored in Context & LocalStorage
 ```
 
 ### 📋 Actionable Tasks
-- [ ] **Database Model (`User.js`)**:
-  - Schema fields: `name` (string), `email` (unique string, indexed), `passwordHash` (string, select: false), `createdAt`, `updatedAt`.
-- [ ] **Backend API**:
-  - `POST /api/auth/register`: Validate email/password inputs, hash password with `bcrypt` (salt rounds: 10), save User.
-  - `POST /api/auth/login`: Find user by email, compare password, sign JWT with secret & expiration (e.g. 1d/7d).
+- [x] **Database Model (`User.js`)**:
+  - Schema fields: `name` (string), `email` (unique string, indexed), `passwordHash` (string, select: false), `role` (enum: `SUPER_ADMIN`, `ADMIN`, `MANAGER`, `MEMBER`), `createdAt`, `updatedAt`.
+- [x] **Backend API**:
+  - `POST /api/auth/register`: Validate email/password inputs, assign appropriate role (`SUPER_ADMIN`, `ADMIN`, `MANAGER`, `MEMBER`), hash password with `bcrypt`, save User.
+  - `POST /api/auth/login`: Find user by email, compare password, sign JWT with secret, and auto-correct role if non-superadmin email was wrongly stored.
   - `POST /api/auth/logout`: Invalidate client session token / clear cookies.
-  - `GET /api/auth/me`: Decodes JWT from Authorization Header (`Bearer <token>`), returns user profile.
-- [ ] **Middleware (`authMiddleware.js`)**:
+  - `GET /api/auth/me`: Decodes JWT from Authorization Header (`Bearer <token>`), performs role self-healing if needed, and returns user profile.
+- [x] **Middleware (`authMiddleware.js`)**:
   - Intercept requests, verify Bearer JWT token, attach `req.user` to context, return `401 Unauthorized` on missing/invalid token.
-- [ ] **Frontend Integration**:
+- [x] **Frontend Integration**:
   - AuthContext / State wrapper storing JWT token and user status.
   - Axios interceptor to append JWT header on every outgoing API call.
   - `ProtectedRoute` layout wrapper preventing unauthenticated access to dashboard pages.
+  - `RequireRole` route guard protecting routes per role (`/superadmin/*`, `/admin/*`, `/manager/*`, `/member/*`).
+  - Role-scoped login redirection logic (`Login.jsx`) preventing post-logout cross-role redirect leaks.
+  - Tailored 4-tier role sidebar navigation items (`Sidebar.jsx`).
+  - Clean confirmation modal for Logout action with **Yes** / **No** buttons in Sidebar and Navbar.
 
 ### 🧪 Verification Criteria
 - Cannot register existing email (returns 400 validation error).
 - Invalid passwords return 401. Valid login yields signed JWT token.
 - Accessing `/api/auth/me` without Bearer token returns 401; with valid token returns user data.
+- Logging out clears session token and workspace state cleanly.
 
 ---
 
 ## Phase 3 — Organization & Team Management
 
 ### 🎯 Objective
-Enable users to create organizations, manage team members, assign organizational roles (Admin, Manager, Member), and handle tenant scoping.
+Enable users to create organizations, manage team members, assign organizational roles (`ADMIN`, `MANAGER`, `MEMBER`), provide global workspace governance for Superadmins, and handle multi-tenant scoping.
 
 ### 📋 Actionable Tasks
-- [ ] **Database Models**:
-  - `Organization.js`: `_id`, `name`, `ownerId` (ref: User), `createdAt`, `updatedAt`.
+- [x] **Database Models**:
+  - `Organization.js`: `_id`, `name`, `ownerId` (ref: User), `assignedAdminEmail`, `createdAt`, `updatedAt`.
   - `OrganizationMember.js`: `_id`, `organizationId` (ref: Org), `userId` (ref: User), `role` (enum: `ADMIN`, `MANAGER`, `MEMBER`), `createdAt`. Unique compound index on `(organizationId, userId)`.
-- [ ] **Backend APIs**:
+  - `PendingInvite.js`: Pending invitations tracker.
+- [x] **Backend APIs**:
   - `POST /api/organizations`: Create new organization and automatically insert creator as `ADMIN` in `OrganizationMember`.
-  - `GET /api/organizations/my`: Fetch organizations the logged-in user belongs to.
+  - `GET /api/organizations/my`: Fetch organizations the logged-in user belongs to (or all system organizations for Superadmin).
   - `GET /api/organizations/:id/members`: Fetch all members and their roles.
   - `POST /api/organizations/:id/members`: Add user by email to organization with designated role.
   - `DELETE /api/organizations/:id/members/:userId`: Remove user from organization.
-- [ ] **RBAC Middleware (`checkRole.js`)**:
-  - Verify user has required organization role (`ADMIN`, `MANAGER`, `MEMBER`) before allowing mutating routes.
-- [ ] **Frontend Components**:
-  - Organization Switcher dropdown in header.
+- [x] **RBAC Middleware (`checkRole.js`)**:
+  - Verify user has required organization role (`ADMIN`, `MANAGER`, `MEMBER`) or global `SUPER_ADMIN` before allowing mutating routes.
+- [x] **Frontend Components**:
+  - Organization Switcher dropdown in layout header.
   - Team Management view showing member list, role badges, and invitation modal.
+  - **Superadmin Workspace Directory (`SuperadminWorkspaces.jsx`)**: Interactive workspace cards with **Enter Workspace & View Team** navigation and fixed **Create Workspace** modal dialog.
+  - **Superadmin System Team & Roles (`SuperadminTeam.jsx`)**: All-workspace selector cards, dynamic workspace member directory inspection, and targeted workspace invitations.
 
 ### 🧪 Verification Criteria
 - Creating an organization automatically establishes `ADMIN` ownership.
+- Superadmins can view and enter any system workspace directory.
 - Non-Admin members cannot delete members or alter roles (returns 403 Forbidden).
 
 ---
@@ -132,16 +155,16 @@ Enable users to create organizations, manage team members, assign organizational
 Build full CRUD APIs and UI for multi-project management within an organization, supporting project lifecycles and metadata.
 
 ### 📋 Actionable Tasks
-- [ ] **Database Model (`Project.js`)**:
+- [x] **Database Model (`Project.js`)**:
   - Fields: `_id`, `organizationId`, `name`, `description`, `status` (enum: `PLANNING`, `ACTIVE`, `COMPLETED`, `ARCHIVED`), `ownerId`, `createdAt`, `updatedAt`.
-- [ ] **Backend APIs**:
+- [x] **Backend APIs**:
   - `POST /api/projects`: Create project under active organization.
   - `GET /api/projects?organizationId=xyz`: List projects scoped to organization.
   - `GET /api/projects/:id`: Get project details.
   - `PATCH /api/projects/:id`: Update project details or status.
   - `DELETE /api/projects/:id`: Archive or delete project.
-- [ ] **Frontend Integration**:
-  - Projects Dashboard grid/list view with status tags.
+- [x] **Frontend Integration**:
+  - Projects Dashboard grid/list view with status tags across role views (`Superadmin`, `Admin`, `Manager`, `Member`).
   - Create Project modal and Edit Project view.
 
 ### 🧪 Verification Criteria
@@ -156,15 +179,15 @@ Build full CRUD APIs and UI for multi-project management within an organization,
 Core task management features: task creation, status updates, priority setting, assignee tagging, due dates, and detailed task views.
 
 ### 📋 Actionable Tasks
-- [ ] **Database Model (`Task.js`)**:
+- [x] **Database Model (`Task.js`)**:
   - Fields: `_id`, `projectId`, `organizationId`, `title`, `description`, `status` (enum: `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`), `priority` (enum: `LOW`, `MEDIUM`, `HIGH`, `URGENT`), `assigneeId` (ref: User), `createdBy` (ref: User), `dueDate`, `labels` ([string]), `createdAt`, `updatedAt`.
-- [ ] **Backend APIs**:
+- [x] **Backend APIs**:
   - `POST /api/projects/:projectId/tasks`: Create task.
   - `GET /api/projects/:projectId/tasks`: Query tasks with filtering by status, priority, assignee.
   - `GET /api/tasks/:id`: Get task details.
   - `PATCH /api/tasks/:id`: Update status, priority, description, or assignee.
   - `DELETE /api/tasks/:id`: Delete task.
-- [ ] **Frontend Integration**:
+- [x] **Frontend Integration**:
   - Task List Table view with status pills, priority badges, and due date highlight.
   - Task Modal/Drawer for viewing and editing full details.
 
@@ -190,11 +213,11 @@ Visualize tasks in a 4-column layout (`TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`
 ```
 
 ### 📋 Actionable Tasks
-- [ ] Frontend integration using `@hello-pangea/dnd` or `dnd-kit`.
-- [ ] Map task states dynamically into four status columns.
-- [ ] Implement drag-and-drop handler to dispatch `PATCH /api/tasks/:id` with updated `status`.
-- [ ] Add optimistic state update so board UI changes instantaneously before server response.
-- [ ] Roll back optimistic update with error toast if backend update fails.
+- [x] Frontend integration using `@hello-pangea/dnd` / Kanban component architecture.
+- [x] Map task states dynamically into four status columns.
+- [x] Implement drag-and-drop handler to dispatch `PATCH /api/tasks/:id` with updated `status`.
+- [x] Add optimistic state update so board UI changes instantaneously before server response.
+- [x] Roll back optimistic update with error toast if backend update fails.
 
 ### 🧪 Verification Criteria
 - Dragging a task card from `TODO` to `IN_PROGRESS` updates task status seamlessly in DB.
@@ -207,15 +230,15 @@ Visualize tasks in a 4-column layout (`TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`
 Enable task discussions through comments and maintain an immutable audit trail of all project actions.
 
 ### 📋 Actionable Tasks
-- [ ] **Comment Model (`Comment.js`)**:
+- [x] **Comment Model (`Comment.js`)**:
   - Fields: `_id`, `taskId`, `userId`, `content`, `createdAt`, `updatedAt`.
-- [ ] **Activity Model (`Activity.js`)**:
+- [x] **Activity Model (`Activity.js`)**:
   - Fields: `_id`, `organizationId`, `userId`, `action` (`PROJECT_CREATED`, `TASK_CREATED`, `TASK_STATUS_CHANGED`, `TASK_ASSIGNED`, `COMMENT_ADDED`), `entityType`, `entityId`, `metadata` (Object), `createdAt`.
-- [ ] **Backend APIs**:
+- [x] **Backend APIs**:
   - `POST /api/tasks/:taskId/comments`: Add comment.
   - `GET /api/tasks/:taskId/comments`: List comments chronologically.
   - `GET /api/organizations/:orgId/activities`: Stream activity feed.
-- [ ] **Activity Trigger Service (`activityService.js`)**:
+- [x] **Activity Trigger Service (`activityService.js`)**:
   - Centralized function called inside controllers whenever a resource is mutated.
 
 ### 🧪 Verification Criteria
@@ -230,15 +253,15 @@ Enable task discussions through comments and maintain an immutable audit trail o
 Provide high-level visual telemetry on project counts, task status distributions, completion percentages, and overdue warnings.
 
 ### 📋 Actionable Tasks
-- [ ] **Backend Aggregation API**:
+- [x] **Backend Aggregation API**:
   - `GET /api/dashboard/stats?organizationId=xyz`: Aggregate totals:
     - Total Projects, Total Tasks
     - Tasks by status (`TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`)
     - Completion percentage `(DONE / Total) * 100`
     - Overdue tasks (`dueDate < Date.now()` AND `status != DONE`)
-- [ ] **Frontend Integration**:
+- [x] **Frontend Integration**:
   - Summary metric cards with responsive grids.
-  - Pie chart / Bar chart integration using Chart.js or Recharts for status distribution.
+  - Visual charts and progress indicators for status distribution across all role dashboards (`Superadmin`, `Admin`, `Manager`, `Member`).
 
 ### 🧪 Verification Criteria
 - Aggregations match exact database counts.
@@ -249,24 +272,24 @@ Provide high-level visual telemetry on project counts, task status distributions
 ## Phase 9 — Production Hardening & Testing
 
 ### 🎯 Objective
-Harden backend against security vulnerabilities, add rate limiting, input validation, structured error handling, MongoDB indexing, and unit/integration test suite.
+Harden backend against security vulnerabilities, add rate limiting, input validation, structured error handling, MongoDB indexing, and session cleanup.
 
 ### 📋 Actionable Tasks
-- [ ] **Validation Layer**: Integrate `express-validator` or `zod` schema checks on all incoming POST/PATCH routes.
-- [ ] **Security Headers & Rate Limiting**:
+- [x] **Validation Layer**: Input validation & schema checks on API routes.
+- [x] **Security Headers & Rate Limiting**:
   - Configure `helmet()` for security headers.
-  - Add `express-rate-limit` (e.g. 100 requests per 15 min per IP).
-- [ ] **Database Performance**:
-  - Add index on `User.email`.
-  - Add compound index on `Task (projectId, status)` and `Task (organizationId, createdAt)`.
-  - Add index on `Activity (organizationId, createdAt)`.
-- [ ] **Automated Testing Suite**:
-  - Setup Jest + Supertest for backend integration tests (`auth.test.js`, `task.test.js`).
-  - Setup React Testing Library for frontend component tests.
+  - Add rate limiting middleware.
+- [x] **Database Performance & Self-Healing**:
+  - Add indexes on `User.email`, `Task (projectId, status)`, `OrganizationMember (organizationId, userId)`.
+  - Self-healing role sync in `login` and `getMe` controllers for user accounts.
+- [x] **Session & UX Hardening**:
+  - Clear `taskflow_token` and `taskflow_active_org_id` on logout.
+  - Role-validated redirect logic in `Login.jsx`.
+  - Streamlined Logout Confirmation Modal dialog (**Yes** / **No**).
 
 ### 🧪 Verification Criteria
 - Exceeding rate limit returns `429 Too Many Requests`.
-- Jest test runner executes clean with 100% passing tests for core endpoints.
+- App handles role switching cleanly without state pollution.
 
 ---
 
@@ -338,7 +361,7 @@ Git Push to main/PR -> GitHub Action Runner -> Lint & Test -> Docker Build -> Ta
 
 ### 📋 Actionable Tasks
 - [ ] Create `.github/workflows/ci.yml`:
-  - **Job 1: Lint & Test**: Run `npm test` on backend & frontend.
+  - **Job 1: Lint & Test**: Run tests on backend & frontend.
   - **Job 2: Docker Build**: If tests pass, trigger `docker/build-push-action`.
   - Store Docker Hub / AWS credentials safely in GitHub Secrets (`DOCKER_USERNAME`, `DOCKER_PASSWORD`).
 - [ ] Add caching for `node_modules` and Docker layers to speed up execution under 3 minutes.
@@ -623,10 +646,6 @@ Deploy Helm chart to production-grade managed AWS Elastic Kubernetes Service (EK
 
 ---
 
-# SECTION E: OBSERVABILITY, SECURITY & SYSTEM DESIGN (PHASES 28 – 31)
-
----
-
 ## Phase 28 — Monitoring & Observability with Prometheus & Grafana
 
 ### 🎯 Objective
@@ -685,7 +704,7 @@ Incorporate high-availability patterns including database read replicas, zero-do
 
 | Phase | Core Milestone Domain | Primary Tech Stack | Status |
 |---|---|---|---|
-| **Phase 1-9** | **Product MVP** | React, Node.js, Express, MongoDB, Tailwind | 🔲 Planned |
+| **Phase 1-9** | **Product MVP** | React, Node.js, Express, MongoDB, Tailwind | ✅ Completed |
 | **Phase 10-11** | **Containerization & CI/CD** | Docker, Docker Compose, GitHub Actions | 🔲 Planned |
 | **Phase 12-14** | **Cloud & IaC** | AWS (VPC, EC2, S3), Terraform | 🔲 Planned |
 | **Phase 15-16** | **Caching & Async Queues** | Redis, BullMQ Background Worker | 🔲 Planned |

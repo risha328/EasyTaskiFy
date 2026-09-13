@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,7 +9,9 @@ import {
   BarChart3,
   LogOut,
   X,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -19,23 +21,57 @@ export const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('taskflow_sidebar_collapsed') === 'true';
+  });
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Dynamic role folder prefix based on user role
-  let rolePrefix = '/admin';
-  if (user?.role === 'SUPER_ADMIN') rolePrefix = '/superadmin';
-  else if (user?.role === 'ADMIN') rolePrefix = '/admin';
-  else if (user?.role === 'MANAGER') rolePrefix = '/manager';
-  else if (user?.role === 'MEMBER' || user?.role === 'USER') rolePrefix = '/member';
+  useEffect(() => {
+    localStorage.setItem('taskflow_sidebar_collapsed', isCollapsed);
+  }, [isCollapsed]);
 
-  const navigationItems = [
-    { name: 'Dashboard', path: `${rolePrefix}/dashboard`, icon: LayoutDashboard },
-    { name: 'Workspaces', path: `${rolePrefix}/workspaces`, icon: Building2 },
-    { name: 'Projects', path: `${rolePrefix}/projects`, icon: FolderKanban },
-    { name: 'Task Board', path: `${rolePrefix}/tasks`, icon: CheckSquare },
-    { name: 'Team & Roles', path: `${rolePrefix}/team`, icon: Users },
-    { name: 'Analytics', path: `${rolePrefix}/analytics`, icon: BarChart3 },
-  ];
+  // Dynamic role folder prefix & tailored navigation links per role
+  let rolePrefix = '/admin';
+  let navigationItems = [];
+
+  if (user?.role === 'SUPER_ADMIN') {
+    rolePrefix = '/superadmin';
+    navigationItems = [
+      { name: 'System Dashboard', path: '/superadmin/dashboard', icon: LayoutDashboard },
+      { name: 'Workspaces Directory', path: '/superadmin/workspaces', icon: Building2 },
+      { name: 'System Team & Roles', path: '/superadmin/team', icon: Users },
+      { name: 'Global Projects', path: '/superadmin/projects', icon: FolderKanban },
+      { name: 'Audit & Analytics', path: '/superadmin/analytics', icon: BarChart3 },
+    ];
+  } else if (user?.role === 'ADMIN') {
+    rolePrefix = '/admin';
+    navigationItems = [
+      { name: 'Workspace Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'My Workspace', path: '/admin/workspaces', icon: Building2 },
+      { name: 'Projects', path: '/admin/projects', icon: FolderKanban },
+      { name: 'Task Board', path: '/admin/tasks', icon: CheckSquare },
+      { name: 'Team & Roles', path: '/admin/team', icon: Users },
+      { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
+    ];
+  } else if (user?.role === 'MANAGER') {
+    rolePrefix = '/manager';
+    navigationItems = [
+      { name: 'Manager Dashboard', path: '/manager/dashboard', icon: LayoutDashboard },
+      { name: 'My Projects', path: '/manager/projects', icon: FolderKanban },
+      { name: 'Kanban Task Board', path: '/manager/tasks', icon: CheckSquare },
+      { name: 'Project Team', path: '/manager/team', icon: Users },
+      { name: 'Team Analytics', path: '/manager/analytics', icon: BarChart3 },
+    ];
+  } else {
+    rolePrefix = '/member';
+    navigationItems = [
+      { name: 'My Dashboard', path: '/member/dashboard', icon: LayoutDashboard },
+      { name: 'My Task Board', path: '/member/tasks', icon: CheckSquare },
+      { name: 'Assigned Projects', path: '/member/projects', icon: FolderKanban },
+      { name: 'Team & Activity', path: '/member/team', icon: Users },
+    ];
+  }
 
   const getInitial = (name) => {
     if (!name) return 'A';
@@ -49,68 +85,106 @@ export const Sidebar = () => {
 
   return (
     <>
-      <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col h-screen sticky top-0 shrink-0 select-none">
-        {/* Brand Logo Header (No underline border) */}
-        <div className="h-16 px-6 flex items-center">
-          <Link to="/" className="flex items-center gap-2 group">
-            <EasyTaskiFyLogo className="h-8" theme="light" textSize="text-2xl" />
-          </Link>
+      <aside
+        className={`bg-white border-r border-zinc-200 flex flex-col h-screen sticky top-0 shrink-0 select-none transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        {/* Brand Logo Header & Toggle Button */}
+        <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-100">
+          {!isCollapsed ? (
+            <Link to="/" className="flex items-center gap-2 overflow-hidden truncate">
+              <EasyTaskiFyLogo className="h-7" theme="light" textSize="text-xl" />
+            </Link>
+          ) : (
+            <Link to="/" className="mx-auto flex items-center justify-center p-1 hover:opacity-80 transition-opacity" title="EasyTaskiFy">
+              <EasyTaskiFyLogo className="h-7" showText={false} theme="light" />
+            </Link>
+          )}
+
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer shrink-0"
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
         </div>
 
         {/* Main Navigation Links */}
-        <div className="flex-1 overflow-y-auto px-3 py-4">
-          <nav className="space-y-1">
+        <div className="flex-1 overflow-y-auto px-2.5 py-4">
+          <nav className="space-y-1.5">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
                   key={item.name}
                   to={item.path}
+                  title={isCollapsed ? item.name : undefined}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    `flex items-center gap-3 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                      isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    } ${
                       isActive
                         ? 'bg-zinc-900 text-white font-semibold shadow-sm'
                         : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.name}</span>
+                  <Icon className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'} shrink-0`} />
+                  {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </NavLink>
               );
             })}
           </nav>
         </div>
 
-        {/* User Profile Card & Logout (Replaces Settings) */}
-        <div className="p-3 border-t border-zinc-200 bg-zinc-50/50">
-          <div className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* User Initial Circle (Dark Mode Circle matching image) */}
-              <div className="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+        {/* User Profile Card & Logout */}
+        <div className="p-2.5 border-t border-zinc-200 bg-zinc-50/50">
+          {!isCollapsed ? (
+            <div className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between gap-2.5 shadow-sm">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                  {getInitial(user?.name)}
+                </div>
+
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-zinc-900 truncate leading-tight">
+                    {user?.name || 'User'}
+                  </h4>
+                  <p className="text-[10px] text-zinc-500 font-mono truncate">
+                    {user?.email || 'user@taskflow.dev'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(true)}
+                title="Sign Out"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0 cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <div
+                className="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shadow-md"
+                title={`${user?.name || 'User'} (${user?.email})`}
+              >
                 {getInitial(user?.name)}
               </div>
-
-              <div className="min-w-0">
-                <h4 className="text-xs font-bold text-zinc-900 truncate leading-tight">
-                  {user?.name || 'User'}
-                </h4>
-                <p className="text-[10px] text-zinc-500 font-mono truncate">
-                  {user?.email || 'user@taskflow.dev'}
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(true)}
+                title="Sign Out"
+                className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-
-            {/* Logout Action Button */}
-            <button
-              type="button"
-              onClick={() => setShowLogoutModal(true)}
-              title="Sign Out"
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0 cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+          )}
         </div>
       </aside>
 
@@ -125,7 +199,7 @@ export const Sidebar = () => {
               </div>
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="text-zinc-400 hover:text-zinc-700 transition-colors p-1 cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-700 p-1 rounded-lg hover:bg-zinc-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -137,14 +211,14 @@ export const Sidebar = () => {
                 onClick={() => setShowLogoutModal(false)}
                 className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-700 text-xs font-semibold hover:bg-zinc-100 transition-all cursor-pointer"
               >
-                No
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmLogout}
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 shadow-md transition-all cursor-pointer"
               >
-                <span>Yes</span>
+                Sign Out
               </button>
             </div>
           </div>
@@ -153,5 +227,3 @@ export const Sidebar = () => {
     </>
   );
 };
-
-export default Sidebar;

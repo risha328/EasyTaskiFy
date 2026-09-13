@@ -1,14 +1,35 @@
 @import "tailwindcss";
 
 @layer base {
+  * {
+    font-family: 'Inter', 'Lato', system-ui, -apple-system, sans-serif;
+  }
+
   body {
-    font-family: 'Lato', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Lato', system-ui, -apple-system, sans-serif;
     background-color: #fafafa;
     color: #09090b;
   }
 
   code, pre {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  button,
+  [role="button"],
+  select,
+  a,
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input:disabled {
+    cursor: not-allowed !important;
   }
 }
 
