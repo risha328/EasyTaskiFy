@@ -12,22 +12,32 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-// Bulletproof CORS Middleware
-app.use((req, res, next) => {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-organization-id');
+// 1. CORS Middleware using npm cors package with dynamic origin reflection
+app.use(
+  cors({
+    origin: (origin, callback) => callback(null, origin || true),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-organization-id'],
+  })
+);
 
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+// 2. Extra CORS header safety middleware
+app.use((req, res, next) => {
+  if (req.headers.origin) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
   }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
 
-// Security HTTP headers
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, crossOriginOpenerPolicy: false }));
+// 3. Security HTTP headers (disable crossOriginResourcePolicy to allow cross-domain API calls)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+  })
+);
 
 // Logging middleware
 if (config.nodeEnv === 'development') {
