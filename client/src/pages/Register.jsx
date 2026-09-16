@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { SquareTerminal, User, Mail, Lock, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { EasyTaskiFyLogo } from '../components/common/Logo';
 
 export const Register = () => {
   const [name, setName] = useState('');
@@ -62,11 +63,10 @@ export const Register = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-900 text-white shadow-md mb-2">
-            <SquareTerminal className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Create TaskFlow Account</h2>
-          <p className="text-xs text-zinc-600 font-medium">Join your team's DevOps & Task Management Platform</p>
+          <Link to="/" className="inline-flex items-center justify-center hover:opacity-90 transition-opacity mb-1">
+            <EasyTaskiFyLogo className="h-10" theme="light" textSize="text-3xl" />
+          </Link>
+          <p className="text-xs text-zinc-600 font-medium">Join your team's EasyTaskiFy workspace</p>
         </div>
 
         {/* Register Form Card */}
@@ -104,7 +104,7 @@ export const Register = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="dev@taskflow.dev"
+                  placeholder="dev@easytaskify.com"
                   required
                   className="w-full bg-zinc-50 border border-zinc-300 rounded-xl pl-10 pr-4 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:bg-white focus:ring-1 focus:ring-zinc-900 transition-all"
                 />
