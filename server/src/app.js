@@ -12,31 +12,18 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-// Security HTTP headers
-app.use(helmet());
-
-// CORS configuration
-const allowedOrigins = [
-  config.clientUrl,
-  config.clientUrl ? config.clientUrl.replace(/\/$/, '') : '',
-  'http://localhost:5173',
-  'http://localhost:3000'
-].filter(Boolean);
-
+// CORS configuration (Enable cross-origin requests from Vercel & local environments)
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-        return callback(null, true);
-      }
-      return callback(null, true);
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-organization-id'],
   })
 );
+
+// Security HTTP headers
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // Logging middleware
 if (config.nodeEnv === 'development') {
