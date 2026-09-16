@@ -1,0 +1,28 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="28" fill="#09090B"/>
+  <defs>
+    <linearGradient id="faviconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(4, 19)">
+    <path
+      d="M 16 48 L 44 74 C 47 77 53 77 56 74 L 102 24"
+      stroke="#FFFFFF"
+      stroke-width="11"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 32 24 C 32 14, 82 10, 94 22 C 102 30, 80 44, 42 46"
+      stroke="url(#faviconGrad)"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="102" cy="14" r="6" fill="#FFFFFF" />
+    <circle cx="94" cy="67" r="6" fill="#FFFFFF" />
+  </g>
+</svg>
