@@ -114,12 +114,6 @@ export const SuperadminTeam = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 mb-1">
-            <span className="px-2 py-0.5 rounded bg-zinc-900 text-white font-semibold">
-              SUPERADMIN GOVERNANCE
-            </span>
-            <span>• Global Workspaces & Team Directory</span>
-          </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">
             System Workspaces & Team Members
           </h1>

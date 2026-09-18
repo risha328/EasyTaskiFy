@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganization } from '../../context/OrganizationContext';
+import { fetchSuperadminAnalyticsApi } from '../../services/api';
 import {
   Building2,
   Plus,
-  Check,
   Loader2,
   X,
   ChevronDown,
   Users,
-  ArrowRight
+  ArrowRight,
+  FolderKanban,
+  CheckCircle2,
+  TrendingUp,
+  Layers,
+  ShieldCheck,
+  Mail
 } from 'lucide-react';
 
 export const SuperadminDashboard = () => {
@@ -18,12 +24,33 @@ export const SuperadminDashboard = () => {
   const { user } = useAuth();
   const { organizations, activeOrg, canCreateWorkspace, switchOrganization, createOrganization } = useOrganization();
 
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [filterTenant, setFilterTenant] = useState('All Tenants');
+
+  const loadDashboardAnalytics = async () => {
+    try {
+      setIsLoadingAnalytics(true);
+      const res = await fetchSuperadminAnalyticsApi();
+      if (res.status === 'success' && res.data) {
+        setAnalyticsData(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load backend analytics for dashboard:', err.message);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardAnalytics();
+  }, []);
 
   const handleCreateOrg = async (e) => {
     e.preventDefault();
@@ -40,6 +67,7 @@ export const SuperadminDashboard = () => {
       setNewOrgName('');
       setAdminEmail('');
       setIsModalOpen(false);
+      await loadDashboardAnalytics();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create workspace.');
     } finally {
@@ -47,41 +75,19 @@ export const SuperadminDashboard = () => {
     }
   };
 
-  const displayOrgs = organizations.length > 0 ? organizations : [
-    {
-      id: 'acme-corp-01',
-      name: 'Acme Corp',
-      role: 'ADMIN',
-      assignedAdminEmail: 'admin@acme.com',
-      tenantId: 'acme-corp-01',
-      teamMembers: '128 active',
-      activeProjects: '14 sprints',
-      status: 'ACTIVE'
-    },
-    {
-      id: 'veloce-infra-99',
-      name: 'Veloce Cloud',
-      role: 'MEMBER',
-      assignedAdminEmail: 'ops@veloce.io',
-      tenantId: 'veloce-infra-99',
-      teamMembers: '42 active',
-      activeProjects: '8 sprints',
-      status: 'STANDBY'
-    },
-    {
-      id: 'stripe-dev-04',
-      name: 'Stripe Sandbox',
-      role: 'VIEWER',
-      assignedAdminEmail: 'fin-eng@stripe.org',
-      tenantId: 'stripe-dev-04',
-      teamMembers: '16 active',
-      activeProjects: '3 sprints',
-      status: 'SANDBOX'
-    }
-  ];
+  const summary = analyticsData?.summary || {
+    totalWorkspaces: organizations.length || 0,
+    totalUsers: 0,
+    totalProjects: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    completionRate: 0,
+  };
+
+  const displayOrgs = organizations;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto font-lato">
+    <div className="space-y-8 max-w-7xl mx-auto font-lato pb-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-zinc-200/80 pb-6">
         <div>
@@ -93,58 +99,78 @@ export const SuperadminDashboard = () => {
         {canCreateWorkspace && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-semibold text-xs hover:bg-zinc-800 shadow-md transition-all shrink-0"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-semibold text-xs hover:bg-zinc-800 shadow-md transition-all shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Another Workspace</span>
+            <span>Create Workspace</span>
           </button>
         )}
       </div>
 
-      {/* Top 4 KPI Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL WORKSPACES</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-zinc-900 font-mono">{displayOrgs.length}</span>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              1 Active Primary
+      {/* Backend Live Metrics Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Total Workspaces Card */}
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL WORKSPACES</span>
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center shrink-0">
+              <Building2 className="w-4.5 h-4.5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-zinc-900 font-mono">
+              {isLoadingAnalytics ? <Loader2 className="w-5 h-5 animate-spin inline" /> : summary.totalWorkspaces}
             </span>
           </div>
-          <p className="text-[11px] text-zinc-500 font-medium">Multi-tenant isolated Orgs</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL USERS MANAGED</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-zinc-900 font-mono">1,428</span>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              +18% MoM
+        {/* Total User Seats Card */}
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-bold">TOTAL USER SEATS</span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 border border-sky-100 flex items-center justify-center shrink-0">
+              <Users className="w-4.5 h-4.5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-zinc-900 font-mono">
+              {isLoadingAnalytics ? <Loader2 className="w-5 h-5 animate-spin inline" /> : summary.totalUsers}
             </span>
           </div>
-          <p className="text-[11px] text-zinc-500 font-medium">Across 4 user roles</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">UPTIME SLA</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-zinc-900 font-mono">99.99%</span>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Zero Incidents
+        {/* Active Projects Card */}
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-bold">ACTIVE PROJECTS</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 border border-amber-100 flex items-center justify-center shrink-0">
+              <FolderKanban className="w-4.5 h-4.5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-zinc-900 font-mono">
+              {isLoadingAnalytics ? <Loader2 className="w-5 h-5 animate-spin inline" /> : summary.totalProjects}
             </span>
           </div>
-          <p className="text-[11px] text-zinc-500 font-medium">Global edge routing</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-2">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">SYSTEM GOVERNANCE</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-zinc-900">Enforced</span>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-300">
-              MFA 100%
+        {/* Tasks Delivered Card */}
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-bold">TASKS DELIVERED</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4.5 h-4.5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-zinc-900 font-mono">
+              {isLoadingAnalytics ? (
+                <Loader2 className="w-5 h-5 animate-spin inline" />
+              ) : (
+                `${summary.completedTasks} / ${summary.totalTasks}`
+              )}
             </span>
           </div>
-          <p className="text-[11px] text-zinc-500 font-medium">Strict isolation active</p>
         </div>
       </div>
 
@@ -158,98 +184,79 @@ export const SuperadminDashboard = () => {
               {displayOrgs.length}
             </span>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-            <span>Filter:</span>
-            <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-zinc-800 font-medium hover:border-zinc-300">
-              <span>{filterTenant}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-            </button>
+        {displayOrgs.length === 0 ? (
+          <div className="p-10 text-center border border-dashed border-zinc-300 rounded-2xl bg-zinc-50/50 space-y-2">
+            <Building2 className="w-8 h-8 text-zinc-400 mx-auto" />
+            <h3 className="text-xs font-bold text-zinc-900">No Workspaces Created Yet</h3>
+            <p className="text-xs text-zinc-500">Click "Create Workspace" above to set up your first organization.</p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {displayOrgs.map((org) => {
+              const isActive = activeOrg?.id === org.id;
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {displayOrgs.map((org, index) => {
-            const isActive = activeOrg?.id === org.id || index === 0;
-            const orgRole = org.role || (index === 0 ? 'ADMIN' : index === 1 ? 'MEMBER' : 'VIEWER');
-            const tenantId = org.tenantId || `${org.name.toLowerCase().replace(/\s+/g, '-')}-0${index + 1}`;
-            const admin = org.assignedAdminEmail || (index === 0 ? 'admin@acme.com' : index === 1 ? 'ops@veloce.io' : 'fin-eng@stripe.org');
-            const members = org.teamMembers || (index === 0 ? '128 active' : index === 1 ? '42 active' : '16 active');
-            const projects = org.activeProjects || (index === 0 ? '14 sprints' : index === 1 ? '8 sprints' : '3 sprints');
-            const statusLabel = isActive ? 'ACTIVE' : (index === 1 ? 'STANDBY' : 'SANDBOX');
+              return (
+                <div
+                  key={org.id}
+                  className={`p-6 rounded-2xl border transition-all flex flex-col justify-between space-y-6 ${
+                    isActive
+                      ? 'bg-white border-2 border-zinc-900 shadow-xl'
+                      : 'bg-white border border-zinc-200 hover:border-zinc-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-md">
+                          {org.name ? org.name[0].toUpperCase() : 'W'}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-base text-zinc-900 truncate">{org.name}</h3>
+                          <p className="text-[11px] font-mono text-zinc-500">
+                            Role: <span className="font-bold text-zinc-800">{org.role || 'ADMIN'}</span>
+                          </p>
+                        </div>
+                      </div>
 
-            return (
-              <div
-                key={org.id || org.name}
-                className={`p-6 rounded-2xl border transition-all flex flex-col justify-between space-y-6 ${
-                  isActive
-                    ? 'bg-white border-2 border-zinc-900 shadow-xl'
-                    : 'bg-white border border-zinc-200 hover:border-zinc-300 shadow-sm'
-                }`}
-              >
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-md">
-                        {org.name ? org.name[0].toUpperCase() : 'W'}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-base text-zinc-900 truncate">{org.name}</h3>
-                        <p className="text-[11px] font-mono text-zinc-500">
-                          Role: <span className="font-bold text-zinc-800">{orgRole}</span>
-                        </p>
-                      </div>
+                      {isActive && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold shrink-0">
+                          • ACTIVE
+                        </span>
+                      )}
                     </div>
 
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border shrink-0 ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-zinc-100 text-zinc-600 border-zinc-200'
-                      }`}
+                    {org.assignedAdminEmail ? (
+                      <div className="flex items-center gap-2.5 text-xs p-3 rounded-xl font-mono bg-zinc-50 text-zinc-700 border border-zinc-200/80">
+                        <Mail className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        <span className="truncate">Admin: {org.assignedAdminEmail}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2.5 text-xs p-3 rounded-xl font-mono bg-zinc-50/50 text-zinc-400 border border-zinc-100">
+                        <Mail className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                        <span className="truncate italic">No designated email</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <button
+                      onClick={() => navigate(`/superadmin/team?workspaceId=${org.id}`)}
+                      className="w-full py-3 px-4 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center justify-between transition-all cursor-pointer shadow-2xs group"
                     >
-                      {isActive && <span className="mr-1 text-emerald-500">•</span>}
-                      {statusLabel}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5 pt-2 text-xs font-mono border-t border-zinc-100">
-                    <div className="flex items-center justify-between text-zinc-500">
-                      <span>Tenant ID</span>
-                      <span className="text-zinc-800 font-semibold">{tenantId}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-zinc-500">
-                      <span>Org Admin</span>
-                      <span className="text-zinc-800 font-semibold truncate max-w-[150px]">{admin}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-zinc-500">
-                      <span>Team Members</span>
-                      <span className="text-zinc-800 font-semibold">{members}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-zinc-500">
-                      <span>Active Projects</span>
-                      <span className="text-zinc-800 font-semibold">{projects}</span>
-                    </div>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Users className="w-4 h-4 text-zinc-300 shrink-0" />
+                        <span className="truncate">Enter Workspace & View Team</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+                    </button>
                   </div>
                 </div>
-
-                <div>
-                  <button
-                    onClick={() => navigate(`/superadmin/team?workspaceId=${org.id}`)}
-                    className="w-full py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Enter Workspace & View Team</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-auto text-zinc-400" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Create Workspace Modal */}
@@ -261,7 +268,7 @@ export const SuperadminDashboard = () => {
                 <Building2 className="w-4 h-4 text-zinc-900" />
                 <h3 className="text-sm font-bold text-zinc-900">Create New Workspace</h3>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-700">
+              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-700 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -304,14 +311,14 @@ export const SuperadminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 text-xs hover:bg-zinc-100 font-medium"
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 text-xs hover:bg-zinc-100 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center gap-1.5"
+                  className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Create'}
                 </button>

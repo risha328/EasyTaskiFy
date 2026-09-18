@@ -134,3 +134,10 @@ export const deleteTaskApi = async (id) => {
   const response = await apiClient.delete(`/tasks/${id}`);
   return response.data;
 };
+
+// Analytics API Methods
+export const fetchSuperadminAnalyticsApi = async () => {
+  const response = await apiClient.get('/analytics/superadmin');
+  return response.data;
+};
+

@@ -38,11 +38,11 @@ export const Sidebar = () => {
   if (user?.role === 'SUPER_ADMIN') {
     rolePrefix = '/superadmin';
     navigationItems = [
-      { name: 'System Dashboard', path: '/superadmin/dashboard', icon: LayoutDashboard },
-      { name: 'Workspaces Directory', path: '/superadmin/workspaces', icon: Building2 },
-      { name: 'System Team & Roles', path: '/superadmin/team', icon: Users },
-      { name: 'Global Projects', path: '/superadmin/projects', icon: FolderKanban },
-      { name: 'Audit & Analytics', path: '/superadmin/analytics', icon: BarChart3 },
+      { name: 'Dashboard', path: '/superadmin/dashboard', icon: LayoutDashboard },
+      { name: 'Workspaces', path: '/superadmin/workspaces', icon: Building2 },
+      { name: 'Team & Roles', path: '/superadmin/team', icon: Users },
+      { name: 'Projects', path: '/superadmin/projects', icon: FolderKanban },
+      { name: 'Analytics', path: '/superadmin/analytics', icon: BarChart3 },
     ];
   } else if (user?.role === 'ADMIN') {
     rolePrefix = '/admin';
@@ -86,9 +86,8 @@ export const Sidebar = () => {
   return (
     <>
       <aside
-        className={`bg-white border-r border-zinc-200 flex flex-col h-screen sticky top-0 shrink-0 select-none transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'w-20' : 'w-64'
-        }`}
+        className={`bg-white border-r border-zinc-200 flex flex-col h-screen sticky top-0 shrink-0 select-none transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'
+          }`}
       >
         {/* Brand Logo Header & Toggle Button */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-100">
@@ -122,12 +121,10 @@ export const Sidebar = () => {
                   to={item.path}
                   title={isCollapsed ? item.name : undefined}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                      isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-                    } ${
-                      isActive
-                        ? 'bg-zinc-900 text-white font-semibold shadow-sm'
-                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    `flex items-center gap-3 rounded-xl text-xs font-medium transition-all cursor-pointer ${isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    } ${isActive
+                      ? 'bg-zinc-900 text-white font-semibold shadow-sm'
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                     }`
                   }
                 >

@@ -13,6 +13,7 @@ import { Register } from './pages/Register';
 import SuperadminDashboard from './pages/superadmin/Dashboard';
 import SuperadminWorkspaces from './pages/superadmin/Workspaces';
 import SuperadminTeam from './pages/superadmin/Team';
+import SuperadminAnalytics from './pages/superadmin/Analytics';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -99,7 +100,7 @@ function App() {
                 <Route path="/superadmin/workspaces" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminWorkspaces /></RequireRole>} />
                 <Route path="/superadmin/team" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminTeam /></RequireRole>} />
                 <Route path="/superadmin/projects" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminWorkspaces /></RequireRole>} />
-                <Route path="/superadmin/analytics" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminDashboard /></RequireRole>} />
+                <Route path="/superadmin/analytics" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><SuperadminAnalytics /></RequireRole>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><AdminDashboard /></RequireRole>} />
